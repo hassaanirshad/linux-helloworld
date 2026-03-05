@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 
 #define MSG_BUF_SIZE 4096
@@ -11,11 +12,13 @@
 
 static int do_send_msg(int client_fd) {
     // Create a temp file and pass its fd to the client
-    int tmp_fd = fileno(tmpfile());
+    const char *tmp_path = "/tmp/fd_transfer_tmp";
+    int tmp_fd = open(tmp_path, O_RDWR | O_CREAT | O_TRUNC, 0600);
     if (tmp_fd < 0) {
-        perror("tmpfile");
+        perror("open");
         return -1;
     }
+    unlink(tmp_path);
 
     if (print_fd_info(tmp_fd) < 0) {
         close(tmp_fd);
